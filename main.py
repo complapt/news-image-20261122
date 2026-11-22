@@ -18,6 +18,7 @@ HERE = Path(__file__).resolve().parent
 BUNDLED = HERE / "entry.png"
 LIMIT = 1_048_576  # 1 MiB, the competition maximum
 SIGNATURE = b"\x89PNG\r\n\x1a\n"
+TRAILER = b"\x00\x00\x00\x00IEND\xaeB`\x82"  # the 12-byte IEND chunk
 EXPECTED = (1024, 1024)
 
 
@@ -29,6 +30,8 @@ def load_bundled_poster():
         raise SystemExit(f"cannot read bundled poster: {err}")
     if blob[:8] != SIGNATURE:
         raise SystemExit("bundled poster is not a PNG file")
+    if not blob.endswith(TRAILER):
+        raise SystemExit("bundled poster is truncated: no IEND chunk")
     if len(blob) > LIMIT:
         raise SystemExit(
             f"bundled poster is {len(blob)} bytes, over the {LIMIT} limit")
